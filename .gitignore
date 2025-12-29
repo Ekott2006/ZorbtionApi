@@ -481,4 +481,4 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-Api/Api.http
+Api/Api.httpApi/Api.http
