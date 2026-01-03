@@ -6,15 +6,15 @@ namespace Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserBotProviderController(IUserBotProviderService userBotProviderService) : ControllerBase
+public class UserBotController(IUserBotService userBotService) : ControllerBase
 {
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(string id)
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult> Delete(int id)
     {
         string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId)) return Forbid();
 
-        int deletedCount = await userBotProviderService.Delete(userId, id);
+        int deletedCount = await userBotService.Delete(userId, id);
         if (deletedCount == 0) return NotFound();
 
         return NoContent();

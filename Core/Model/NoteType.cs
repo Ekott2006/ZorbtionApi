@@ -1,7 +1,9 @@
 using Core.Model.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace Core.Model;
 
+[Index(nameof(Name), nameof(CreatorId), IsUnique = true)]
 public class NoteType : BaseModel, IPagination<int>
 {
     public string? CreatorId { get; set; }

@@ -33,7 +33,7 @@ public sealed class NoteFaker : Faker<Note>
                 Interval = flashcardData.Interval,
                 Repetitions = flashcardData.Repetitions,
                 EaseFactor = flashcardData.EaseFactor,
-                DueDate = f.Date.Future(),
+                DueDate = f.Date.FutureOffset().UtcDateTime,
                 StepIndex = flashcardData.StepIndex,
                 NoteTypeTemplateId = f.Random.Int(1, 2)
             });

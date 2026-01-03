@@ -25,4 +25,8 @@
         <PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="10.105.2"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Folder Include="Dto\UserBot\"/>
+    </ItemGroup>
+
 </Project>

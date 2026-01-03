@@ -40,7 +40,10 @@ public class FlashcardAlgorithmService : IFlashcardAlgorithmService
     {
         FlashcardResult flashcardResult = new()
         {
-            Interval = interval, Repetitions = 0, EaseFactor = easeFactor, State = currentState,
+            Interval = interval,
+            Repetitions = 0,
+            EaseFactor = easeFactor,
+            State = currentState,
             LearningStepIndex = stepIndex
         };
         return currentState switch
@@ -62,7 +65,9 @@ public class FlashcardAlgorithmService : IFlashcardAlgorithmService
             case < 3:
                 return new FlashcardResult
                 {
-                    Interval = LearningSteps[0], EaseFactor = easeFactor, State = CardState.Learning,
+                    Interval = LearningSteps[0],
+                    EaseFactor = easeFactor,
+                    State = CardState.Learning,
                     LearningStepIndex = 0
                 };
             // "Easy" - Skip learning and graduate immediately
@@ -78,7 +83,9 @@ public class FlashcardAlgorithmService : IFlashcardAlgorithmService
                 { Interval = GraduationInterval, EaseFactor = easeFactor, State = CardState.Review, Repetitions = 1 }
             : new FlashcardResult
             {
-                Interval = LearningSteps[nextStep], EaseFactor = easeFactor, State = CardState.Learning,
+                Interval = LearningSteps[nextStep],
+                EaseFactor = easeFactor,
+                State = CardState.Learning,
                 LearningStepIndex = nextStep
             };
     }
@@ -92,7 +99,9 @@ public class FlashcardAlgorithmService : IFlashcardAlgorithmService
             double newEase = Math.Max(1.3, easeFactor - 0.20);
             return new FlashcardResult
             {
-                Interval = LearningSteps[0] * dayToMinute, EaseFactor = newEase, State = CardState.Relearning,
+                Interval = LearningSteps[0] * dayToMinute,
+                EaseFactor = newEase,
+                State = CardState.Relearning,
                 LearningStepIndex = 0
             };
         }

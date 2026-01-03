@@ -9,10 +9,12 @@ using Core.Services.Helper.Interface;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Test.Helper;
+using Xunit.Abstractions;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Test.Service;
 
-public class DeckServiceTests : DatabaseSetupHelper
+public class DeckServiceTests : IClassFixture<DatabaseFixture>
 {
     private readonly DataContext _context;
     private readonly DeckService _deckService;
@@ -20,10 +22,12 @@ public class DeckServiceTests : DatabaseSetupHelper
     private readonly Mock<IFlashcardAlgorithmService> _mockAlgorithmService;
     private readonly string _otherCreatorId = "other-user-456";
     private readonly string _testCreatorId = "test-user-123";
+    private readonly ITestOutputHelper _testOutputHelper;
 
-    public DeckServiceTests()
+    public DeckServiceTests(DatabaseFixture databaseFixture, ITestOutputHelper testOutputHelper)
     {
-        _context = Context;
+        _testOutputHelper = testOutputHelper;
+        _context = databaseFixture.Context ?? throw new InvalidOperationException();
         _faker = new Faker();
 
         // Seed database with comprehensive data
@@ -36,15 +40,13 @@ public class DeckServiceTests : DatabaseSetupHelper
     private void SeedDatabase()
     {
         // Create users
-        User? testUser = new UserFaker(_testCreatorId).Generate();
-        testUser.Id = _testCreatorId;
-        testUser.DeckOption = new DeckOptionFaker().Generate();
+        User? testUser = new UserFaker(_testCreatorId);
+        User? otherUser = new UserFaker(_otherCreatorId);
 
-        User? otherUser = new UserFaker(_otherCreatorId).Generate();
-        otherUser.Id = _otherCreatorId;
-        otherUser.DeckOption = new DeckOptionFaker().Generate();
+        _testOutputHelper.WriteLine(JsonSerializer.Serialize(new { testUser, otherUser }));
 
         _context.Users.AddRange(testUser, otherUser);
+        _context.SaveChanges();
 
         // Create note types for test user
         NoteTypeFaker noteTypeFaker = new(_testCreatorId);

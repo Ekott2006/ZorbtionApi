@@ -4,7 +4,6 @@ namespace Core.Model;
 
 public class User : IdentityUser
 {
-    public ICollection<UserBotProvider> BotProviders = [];
     public string ProfileImageUrl { get; set; } = "https://avatar.iran.liara.run/public";
     public List<UserRefreshToken> RefreshTokens { get; set; } = [];
     public List<DateOnly> UserStreaks { get; set; } = [];
@@ -12,6 +11,5 @@ public class User : IdentityUser
     public ICollection<Deck> Decks { get; set; } = [];
     public ICollection<NoteType> NoteTypes { get; set; } = [];
     public List<UserAiProvider> AiProviders { get; set; } = [];
+    public ICollection<UserBot> UserBots { get; set; } = [];
 }
-
-// TODO: Use  Redis or any cache

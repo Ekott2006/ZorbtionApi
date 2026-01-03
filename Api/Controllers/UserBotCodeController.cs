@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Core.Dto.UserBot;
 using Core.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +9,12 @@ namespace Api.Controllers;
 public class UserBotCodeController(IUserBotCodeService userBotCodeService) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<UserBotAuthCodeResponse>> Create(UserBotAuthCodeRequest request)
+    public async Task<ActionResult<UserBotAuthCodeResponse>> Create()
     {
         string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId)) return Forbid();
 
-        string code = await userBotCodeService.GenerateAuthCode(userId, request);
+        string code = await userBotCodeService.GenerateCode(userId);
         return Ok(new UserBotAuthCodeResponse(code));
     }
 

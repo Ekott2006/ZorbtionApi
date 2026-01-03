@@ -1,5 +1,5 @@
 using Core.Dto.Card;
-using Core.Services.Helper.Interface;
+using Core.Services;
 using Core.Services.Interface;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -8,12 +8,12 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramBot.Services;
 
-public class StudyHandler(ICardService cardService, IUserService userService, ITemplateService templateService)
+public class StudyHandler(ICardService cardService, IUserService userService, IUserBotService userBotService)
 {
     public async Task StartStudy(ITelegramBotClient bot, CallbackQuery query, string telegramUserId, int deckId,
         CancellationToken ct)
     {
-        string? userId = await userService.GetByBotId(telegramUserId);
+        string? userId = await userBotService.Get(telegramUserId);
         if (userId is null) return;
 
         CardResponse? card = await cardService.GetNextStudyCard(userId, deckId);
@@ -54,7 +54,7 @@ public class StudyHandler(ICardService cardService, IUserService userService, IT
     public async Task SubmitAnswer(ITelegramBotClient bot, Message message, string answer, int cardId, int deckId,
         CancellationToken ct)
     {
-        string? userId = await userService.GetByBotId(message.From!.Id.ToString());
+        string? userId = await userBotService.Get(message.From!.Id.ToString());
         if (userId is null) return;
 
         int? providerId = await userService.GetDefaultProviderId(userId);

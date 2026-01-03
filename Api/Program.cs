@@ -15,7 +15,13 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddDbContext<DataContext>(options =>
-    options.EnableSensitiveDataLogging().UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    
+    if (!builder.Environment.IsDevelopment()) return;
+    options.EnableSensitiveDataLogging();
+    options.EnableDetailedErrors();
+});
 
 
 builder.Services.AddHostedService<DailyCleanupService>();
@@ -27,7 +33,7 @@ builder.Services.AddScoped<IDeckService, DeckService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<INoteTypeService, NoteTypeService>();
 builder.Services.AddScoped<IUserBotCodeService, UserBotCodeService>();
-builder.Services.AddScoped<IUserBotProviderService, UserBotProviderService>();
+builder.Services.AddScoped<IUserBotService, UserBotService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<ICssService, CssService>();
@@ -60,10 +66,11 @@ builder.Services.AddControllers()
 builder.Services.AddOpenApiConfiguration(builder.Environment);
 WebApplication app = builder.Build();
 
+app.Services.UseSeedDatabaseMiddleware();
+
 // Configure the HTTP request pipeline.
 app.UseOpenApiConfiguration();
 
-// app.Services.UseSeedDatabaseMiddleware();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

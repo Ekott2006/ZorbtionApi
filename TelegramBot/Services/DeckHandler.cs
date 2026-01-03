@@ -1,5 +1,6 @@
 using Core.Dto.Deck;
 using Core.Dto.User;
+using Core.Services;
 using Core.Services.Interface;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -8,11 +9,14 @@ using TelegramBot.Helpers;
 
 namespace TelegramBot.Services;
 
-public class DeckHandler(IDeckService deckService, IUserService userService)
+public class DeckHandler(
+    IDeckService deckService,
+    IUserService userService,
+    IUserBotService userBotService)
 {
     public async Task HandleDashboard(ITelegramBotClient bot, long chatId, string telegramUserId, CancellationToken ct)
     {
-        string? userId = await userService.GetByBotId(telegramUserId);
+        string? userId = await userBotService.Get(telegramUserId);
         if (userId is null)
         {
             await MessageHelper.SendError(bot, chatId, "You are not authenticated. Please use /auth <token> first.",
@@ -43,7 +47,7 @@ public class DeckHandler(IDeckService deckService, IUserService userService)
 
     public async Task HandleListDecks(ITelegramBotClient bot, long chatId, string telegramUserId, CancellationToken ct)
     {
-        string? userId = await userService.GetByBotId(telegramUserId);
+        string? userId = await userBotService.Get(telegramUserId);
         if (userId is null)
         {
             await MessageHelper.SendError(bot, chatId, "You are not authenticated.", ct);
@@ -65,7 +69,7 @@ public class DeckHandler(IDeckService deckService, IUserService userService)
     public async Task HandleDeckSelection(ITelegramBotClient bot, CallbackQuery query, string telegramUserId,
         int deckId, CancellationToken ct)
     {
-        string? userId = await userService.GetByBotId(telegramUserId);
+        string? userId = await userBotService.Get(telegramUserId);
         if (userId is null) return;
 
         DeckSummaryResponse? summary = await deckService.GetSummary(userId, deckId);

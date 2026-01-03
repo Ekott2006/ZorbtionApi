@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Core.Model;
 
-[Index(nameof(Name), nameof(Id), IsUnique = true)]
+[Index(nameof(Name), nameof(CreatorId), IsUnique = true)]
 public class Deck : BaseModel, IPagination<int>
 {
     public string CreatorId { get; set; }

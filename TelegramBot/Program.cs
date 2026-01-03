@@ -24,11 +24,13 @@ IHost host = Host.CreateDefaultBuilder(args)
         // Core Services
         services.AddScoped<IFlashcardAlgorithmService, FlashcardAlgorithmService>();
         services.AddScoped<ITemplateService, TemplateService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IDeckService, DeckService>();
         services.AddScoped<ICardService, CardService>();
+        services.AddScoped<IDeckService, DeckService>();
         services.AddScoped<INoteService, NoteService>();
         services.AddScoped<IUserBotCodeService, UserBotCodeService>();
+        services.AddScoped<IUserBotService, UserBotService>();
+        services.AddScoped<IUserService, UserService>();
+
 
         // Bot Services
         services.AddSingleton<BotService>();

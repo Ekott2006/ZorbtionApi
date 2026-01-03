@@ -1,6 +1,6 @@
 namespace Core.Model.Helper;
 
-public enum UserBotProviderType
+public enum UserBotType
 {
     Telegram
 }

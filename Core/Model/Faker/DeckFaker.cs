@@ -24,7 +24,7 @@ public sealed class DeckFaker : Faker<Deck>
         for (int i = 0; i < days; i++)
             counts.Add(new DeckDailyCount
             {
-                Date = DateOnly.FromDateTime(f.Date.Recent(i)),
+                Date = DateOnly.FromDateTime(f.Date.RecentOffset(i).UtcDateTime),
                 CardState = f.PickRandom<CardState>(),
                 Count = f.Random.Int(1, 50)
             });

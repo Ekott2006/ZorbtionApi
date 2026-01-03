@@ -1,0 +1,1 @@
+"C:\Program Files\dotnet\dotnet.exe" ef database drop --force --project Core\Core.csproj --startup-project Api\Api.csproj --context Core.Data.DataContext

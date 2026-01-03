@@ -41,7 +41,8 @@ public class AuthManager(
         // Handling RefreshTokens
         UserRefreshToken refreshToken = new()
         {
-            UserId = user.Id, Validity = DateTime.UtcNow.AddDays(TokenService.RefreshTokenValidityInDays),
+            UserId = user.Id,
+            Validity = DateTime.UtcNow.AddDays(TokenService.RefreshTokenValidityInDays),
             Token = tokenService.GenerateRefreshToken()
         };
         await context.UserRefreshTokens.AddAsync(refreshToken);
