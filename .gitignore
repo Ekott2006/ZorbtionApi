@@ -481,4 +481,5 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-Api/Api.httpApi/Api.http
+Api/Api.http
+TelegramBot/appsettings.json
