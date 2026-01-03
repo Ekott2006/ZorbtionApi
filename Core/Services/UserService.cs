@@ -24,6 +24,20 @@ public class UserService(DataContext context, IFlashcardAlgorithmService flashca
         return await context.Users.Where(x => x.Id == id).Select(x => (UserResponse)x).FirstOrDefaultAsync();
     }
 
+    public async Task<string?> GetByBotId(string botId)
+    {
+        return await context.UserBotProviders.Where(x => x.Id == botId).Select(x => x.UserId).FirstOrDefaultAsync();
+    }
+
+    public async Task<int?> GetDefaultProviderId(string userId)
+    {
+        User? user = await context.Users
+            .Include(u => u.AiProviders)
+            .FirstOrDefaultAsync(x => x.Id == userId);
+
+        return user?.AiProviders.FirstOrDefault()?.Id;
+    }
+
     public async Task<int> Update(string id, UpdateUserRequest request)
     {
         User? user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);

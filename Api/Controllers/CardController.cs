@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using Core.Dto.Card;
-using Core.Services;
 using Core.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,14 +24,14 @@ public class CardController(ICardService cardService) : ControllerBase
     }
 
     [HttpPost("submit")]
-    public async Task<ActionResult> Submit(int id, CardSubmitRequest request)
+    public async Task<ActionResult<CardResponse>> Submit(int id, CardSubmitRequest request)
     {
         string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId)) return Forbid();
 
-        bool isSuccessful = await cardService.SubmitCardReview(userId, id, request);
-        if (!isSuccessful) return BadRequest();
+        CardResponse? cardResponse = await cardService.SubmitCardReview(userId, id, request);
+        if (cardResponse is null) return BadRequest();
 
-        return NoContent();
+        return Ok(cardResponse);
     }
 }

@@ -28,7 +28,7 @@ public class AuthController(IAuthManager authManager) : ControllerBase
         (User? user, string? signInState) = await authManager.Login(request);
 
         if (signInState != null || user == null)
-            return Problem(signInState, statusCode: StatusCodes.Status401Unauthorized);
+            return Problem(signInState, statusCode: StatusCodes.Status403Forbidden);
 
         AuthResponse response = await authManager.GenerateToken(user);
         return Ok(response);

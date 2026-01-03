@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Core.Services;
+namespace Core.Dto.Card;
 
 public class CardSubmitRequest
 {

@@ -8,9 +8,11 @@ public interface ICardService
 {
     Task<PaginationResult<Card>> Get(string creatorId, int deckId, PaginationRequest<int> request);
 
+    Task<Card?> Get(string creatorId, int id);
+
     Task<int> UpdateCardState(string creatorId, int id, UpdateCardStateRequest request);
 
     Task<CardResponse?> GetNextStudyCard(string creatorId, int deckId);
 
-    Task<bool> SubmitCardReview(string creatorId, int id, CardSubmitRequest request);
+    Task<CardResponse?> SubmitCardReview(string creatorId, int id, CardSubmitRequest request);
 }

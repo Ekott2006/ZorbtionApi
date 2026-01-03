@@ -14,6 +14,8 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
     public DbSet<Note> Notes { get; set; }
     public DbSet<Card> Cards { get; set; }
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+    public DbSet<UserBotCode> UserBotCodes { get; set; }
+    public DbSet<UserBotProvider> UserBotProviders { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

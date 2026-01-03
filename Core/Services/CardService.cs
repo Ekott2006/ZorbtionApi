@@ -24,6 +24,11 @@ public class CardService(
         return await PaginateAsync(query, request);
     }
 
+    public async Task<Card?> Get(string creatorId, int id)
+    {
+        return await context.Cards.FirstOrDefaultAsync(x => x.Note.CreatorId == creatorId && x.Id == id);
+    }
+
     public async Task<int> UpdateCardState(string creatorId, int id, UpdateCardStateRequest request)
     {
         IQueryable<Card> query = context.Cards.Where(x => x.Id == id && x.Note.CreatorId == creatorId);
@@ -115,20 +120,19 @@ public class CardService(
                 if (reviewCard != null) return await MapToResponse(reviewCard);
             }
 
-            if (newLeft > 0)
-            {
-                Card? newCard =
-                    await ApplySortOrder(baseQuery.Where(c => c.State == CardState.New), deck.Option.SortOrder)
-                        .FirstOrDefaultAsync();
-                if (newCard != null) return await MapToResponse(newCard);
-            }
+            if (newLeft <= 0) return null;
+
+            Card? newCard =
+                await ApplySortOrder(baseQuery.Where(c => c.State == CardState.New), deck.Option.SortOrder)
+                    .FirstOrDefaultAsync();
+            if (newCard != null) return await MapToResponse(newCard);
         }
 
         return null;
     }
 
     // TODO: Add the User Request
-    public async Task<bool> SubmitCardReview(string creatorId, int id, CardSubmitRequest request)
+    public async Task<CardResponse?> SubmitCardReview(string creatorId, int id, CardSubmitRequest request)
     {
         DateTime now = DateTime.UtcNow;
         DateOnly today = DateOnly.FromDateTime(now);
@@ -139,18 +143,16 @@ public class CardService(
             .Include(x => x.Template)
             .FirstOrDefaultAsync(x => x.Id == id && x.Note.CreatorId == creatorId && x.State != CardState.Suspended);
 
-        if (card is null) return false;
+        if (card is null) return null;
 
         // 2. Fetch User with Tracking (needed to update Streaks)
         // We fetch the whole user to avoid the "Owned Entity Projection" crash
         User? user = await context.Users
             .FirstOrDefaultAsync(x => x.Id == creatorId);
 
-        if (user is null) return false;
-
         // 3. Find AI Provider
-        UserAiProvider? provider = user.AiProviders.FirstOrDefault(x => x.Id == request.UserProviderId);
-        if (provider is null) return false;
+        UserAiProvider? provider = user?.AiProviders.FirstOrDefault(x => x.Id == request.UserProviderId);
+        if (provider is null) return null;
 
         // 4. AI Evaluation
         IAiService aiService = AiServiceFactory.GetUserService(provider);
@@ -160,7 +162,7 @@ public class CardService(
         );
 
         int? flashcardQuality = await aiService.CheckAnswer(front, request.Answer, back);
-        if (flashcardQuality is null) return false;
+        if (flashcardQuality is null) return null;
 
         // 5. SRS Algorithm Calculation
         FlashcardResult result = algorithmService.Calculate((int)flashcardQuality, card.State, card.Interval,
@@ -168,16 +170,16 @@ public class CardService(
             card.StepIndex);
 
         // 6. Update Daily Statistics (Including the missing DATE check)
-        DeckDailyCount dailyCount = await context.DailyCounts
-                                        .FirstOrDefaultAsync(x => x.DeckId == card.Note.DeckId
-                                                                  && x.CardState == result.State
-                                                                  && x.Date == today)
-                                    ?? new DeckDailyCount
-                                    {
-                                        DeckId = card.Note.DeckId,
-                                        CardState = result.State,
-                                        Date = today
-                                    };
+        DeckDailyCount? dailyCount = await context.DailyCounts
+            .FirstOrDefaultAsync(x => x.DeckId == card.Note.DeckId
+                                      && x.CardState == result.State
+                                      && x.Date == today);
+        dailyCount ??= new DeckDailyCount
+        {
+            DeckId = card.Note.DeckId,
+            CardState = result.State,
+            Date = today
+        };
 
         if (dailyCount.Id == 0) context.DailyCounts.Add(dailyCount);
         dailyCount.Count += 1;
@@ -191,10 +193,10 @@ public class CardService(
         card.StepIndex = result.LearningStepIndex;
 
         // 8. Update Streak
-        if (!user.UserStreaks.Contains(today)) user.UserStreaks.Add(today);
+        if (user != null && !user.UserStreaks.Contains(today)) user.UserStreaks.Add(today);
 
         await context.SaveChangesAsync();
-        return true;
+        return await MapToResponse(card);
     }
 
     private async Task<CardResponse> MapToResponse(Card card)

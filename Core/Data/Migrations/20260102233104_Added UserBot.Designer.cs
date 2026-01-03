@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Core.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260102233104_Added UserBot")]
+    partial class AddedUserBot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -222,18 +225,18 @@ namespace Core.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 605, DateTimeKind.Utc).AddTicks(9370),
+                            CreatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 69, DateTimeKind.Utc).AddTicks(5929),
                             CssStyle = ".card { font-family: arial; text-align: center; }",
                             Name = "Basic",
-                            UpdatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 605, DateTimeKind.Utc).AddTicks(9375)
+                            UpdatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 69, DateTimeKind.Utc).AddTicks(5934)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 606, DateTimeKind.Utc).AddTicks(1159),
+                            CreatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 69, DateTimeKind.Utc).AddTicks(7313),
                             CssStyle = ".card { font-family: arial; text-align: center; }",
                             Name = "Basic (and reversed card)",
-                            UpdatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 606, DateTimeKind.Utc).AddTicks(1160)
+                            UpdatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 69, DateTimeKind.Utc).AddTicks(7314)
                         });
                 });
 
@@ -273,28 +276,28 @@ namespace Core.Data.Migrations
                         {
                             Id = 1,
                             Back = "{{Front}}<hr id=answer>{{Back}}",
-                            CreatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 606, DateTimeKind.Utc).AddTicks(9521),
+                            CreatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 70, DateTimeKind.Utc).AddTicks(6302),
                             Front = "{{Front}}",
                             NoteTypeId = 1,
-                            UpdatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 606, DateTimeKind.Utc).AddTicks(9523)
+                            UpdatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 70, DateTimeKind.Utc).AddTicks(6308)
                         },
                         new
                         {
                             Id = 2,
                             Back = "{{Front}}<hr id=answer>{{Back}}",
-                            CreatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 607, DateTimeKind.Utc).AddTicks(1018),
+                            CreatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 70, DateTimeKind.Utc).AddTicks(7837),
                             Front = "{{Front}}",
                             NoteTypeId = 2,
-                            UpdatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 607, DateTimeKind.Utc).AddTicks(1018)
+                            UpdatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 70, DateTimeKind.Utc).AddTicks(7838)
                         },
                         new
                         {
                             Id = 3,
                             Back = "{{Back}}<hr id=answer>{{Front}}",
-                            CreatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 607, DateTimeKind.Utc).AddTicks(1020),
+                            CreatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 70, DateTimeKind.Utc).AddTicks(7840),
                             Front = "{{Back}}",
                             NoteTypeId = 2,
-                            UpdatedAt = new DateTime(2026, 1, 2, 23, 52, 8, 607, DateTimeKind.Utc).AddTicks(1020)
+                            UpdatedAt = new DateTime(2026, 1, 2, 23, 31, 2, 70, DateTimeKind.Utc).AddTicks(7840)
                         });
                 });
 
@@ -397,25 +400,6 @@ namespace Core.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserBotCodes");
-                });
-
-            modelBuilder.Entity("Core.Model.UserBotProvider", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserBotProviders");
                 });
 
             modelBuilder.Entity("Core.Model.UserRefreshToken", b =>
@@ -753,17 +737,6 @@ namespace Core.Data.Migrations
                 });
 
             modelBuilder.Entity("Core.Model.UserBotCode", b =>
-                {
-                    b.HasOne("Core.Model.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Core.Model.UserBotProvider", b =>
                 {
                     b.HasOne("Core.Model.User", "User")
                         .WithMany()

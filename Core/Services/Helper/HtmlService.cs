@@ -1,8 +1,9 @@
 using AngleSharp;
 using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
+using Core.Services.Helper.Interface;
 
-namespace Core.Services.Helper.Interface;
+namespace Core.Services.Helper;
 
 public class HtmlService : IHtmlService
 {

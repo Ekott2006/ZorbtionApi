@@ -1,0 +1,96 @@
+using Core.Dto.Card;
+using Core.Services.Helper.Interface;
+using Core.Services.Interface;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
+
+namespace TelegramBot.Services;
+
+public class StudyHandler(ICardService cardService, IUserService userService, ITemplateService templateService)
+{
+    public async Task StartStudy(ITelegramBotClient bot, CallbackQuery query, string telegramUserId, int deckId,
+        CancellationToken ct)
+    {
+        string? userId = await userService.GetByBotId(telegramUserId);
+        if (userId is null) return;
+
+        CardResponse? card = await cardService.GetNextStudyCard(userId, deckId);
+        if (card is null)
+        {
+            await bot.EditMessageText(
+                query.Message!.Chat.Id,
+                query.Message.MessageId,
+                "🎉 *All caught up!* No more cards to study for now.",
+                ParseMode.Markdown,
+                cancellationToken: ct);
+            return;
+        }
+
+        await SendCardFront(bot, query.Message!.Chat.Id, query.Message.MessageId, card, deckId, ct);
+    }
+
+    private async Task SendCardFront(ITelegramBotClient bot, long chatId, int messageId, CardResponse card, int deckId,
+        CancellationToken ct)
+    {
+        // Hidden metadata: [CardId:DeckId]
+        string hiddenMeta = $"[{card.Id}:{deckId}]";
+        // We use a zero-width space or just append it at the end in a way we can parse.
+        // Actually, let's just put it in the text.
+        string text =
+            $"📝 *Front*\n\n{card.Front}\n\n_Reply to this message with your answer._\n\n`ID:{card.Id}:{deckId}`";
+
+        await bot.DeleteMessage(chatId, messageId, ct);
+
+        await bot.SendMessage(
+            chatId,
+            text,
+            ParseMode.Markdown,
+            replyMarkup: new ForceReplyMarkup { InputFieldPlaceholder = "Type your answer..." },
+            cancellationToken: ct);
+    }
+
+    public async Task SubmitAnswer(ITelegramBotClient bot, Message message, string answer, int cardId, int deckId,
+        CancellationToken ct)
+    {
+        string? userId = await userService.GetByBotId(message.From!.Id.ToString());
+        if (userId is null) return;
+
+        int? providerId = await userService.GetDefaultProviderId(userId);
+        if (providerId == null)
+        {
+            await bot.SendMessage(message.Chat.Id, "❌ No AI Provider found. Please configure one in the app.",
+                cancellationToken: ct);
+            return;
+        }
+
+        CardSubmitRequest request = new()
+        {
+            Answer = answer,
+            UserProviderId = providerId.Value
+        };
+
+        CardResponse? response = await cardService.SubmitCardReview(userId, cardId, request);
+
+        if (response == null)
+        {
+            await bot.SendMessage(message.Chat.Id, "❌ Error submitting review. Please try again.",
+                cancellationToken: ct);
+            return;
+        }
+
+        string feedback =
+            $"✅ *Review Submitted*\n\n📝 *Front*: {response.Front}\n📖 *Back*: {response.Back}\n\n_Next card loading..._";
+        await bot.SendMessage(message.Chat.Id, feedback, ParseMode.Markdown, cancellationToken: ct);
+
+        // Start next card
+        CardResponse? nextCard = await cardService.GetNextStudyCard(userId, deckId);
+        if (nextCard != null)
+            // We pass a dummy message ID since we are sending a new message anyway
+            await SendCardFront(bot, message.Chat.Id, message.MessageId, nextCard, deckId, ct);
+        else
+            await bot.SendMessage(message.Chat.Id, "🎉 *All caught up!*", ParseMode.Markdown,
+                cancellationToken: ct);
+    }
+}

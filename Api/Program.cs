@@ -21,17 +21,20 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddHostedService<DailyCleanupService>();
 
 // Add services to the container.
+builder.Services.AddScoped<IAuthManager, AuthManager>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IDeckService, DeckService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddScoped<INoteTypeService, NoteTypeService>();
+builder.Services.AddScoped<IUserBotCodeService, UserBotCodeService>();
+builder.Services.AddScoped<IUserBotProviderService, UserBotProviderService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IAuthManager, AuthManager>();
+
 builder.Services.AddScoped<ICssService, CssService>();
-builder.Services.AddScoped<IHtmlService, HtmlService>();
-builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IFlashcardAlgorithmService, FlashcardAlgorithmService>();
+builder.Services.AddScoped<IHtmlService, HtmlService>();
+builder.Services.AddScoped<ITemplateService, TemplateService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 
 builder.Services.AddControllers();

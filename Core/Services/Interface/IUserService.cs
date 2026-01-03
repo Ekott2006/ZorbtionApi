@@ -7,6 +7,8 @@ public interface IUserService
     Task<UserDashboardResponse?> GetUserDashboard(string userId);
     Task<int> UpdateProfileImage(string id, string profileImage);
     Task<UserResponse?> Get(string id);
+    Task<string?> GetByBotId(string botId);
+    Task<int?> GetDefaultProviderId(string userId);
     Task<int> Update(string id, UpdateUserRequest request);
     Task UpdateStreakDaily();
 }
