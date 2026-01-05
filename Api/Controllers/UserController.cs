@@ -12,7 +12,7 @@ namespace Api.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class UserController(IUserService userService, ICurrentUserService currentUserService): BaseController
+public class UserController(IUserService userService, ICurrentUserService currentUserService) : BaseController
 {
     [HttpPut("profile-image")]
     public async Task<IActionResult> SetProfileImage(IFormFile file)
@@ -27,12 +27,9 @@ public class UserController(IUserService userService, ICurrentUserService curren
         if (!success || filePath == null) return BadRequest(message);
 
         ResponseResult<bool> result = await userService.UpdateProfileImage(userId, filePath);
-        
+
         // Custom wrap since we want to return the path if successful
-        if (result.IsSuccess)
-        {
-             return Ok(new { Path = filePath });
-        }
+        if (result.IsSuccess) return Ok(new { Path = filePath });
         return ProcessResult(result);
     }
 

@@ -10,7 +10,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Core.Services;
 
-public class UserService(DataContext context, IFlashcardAlgorithmService flashcardAlgorithmService, ITimeService timeService) : IUserService
+public class UserService(
+    DataContext context,
+    IFlashcardAlgorithmService flashcardAlgorithmService,
+    ITimeService timeService) : IUserService
 {
     public async Task<ResponseResult<bool>> UpdateProfileImage(string id, string profileImage)
     {
@@ -19,12 +22,10 @@ public class UserService(DataContext context, IFlashcardAlgorithmService flashca
             .ExecuteUpdateAsync(x => x.SetProperty(y => y.ProfileImageUrl, profileImage));
 
         if (affectedRows == 0)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.NotFound,
                 $"User with ID '{id}' not found."
             );
-        }
 
         return ResponseResult<bool>.Success(true);
     }
@@ -37,12 +38,10 @@ public class UserService(DataContext context, IFlashcardAlgorithmService flashca
             .FirstOrDefaultAsync();
 
         if (userResponse == null)
-        {
             return ResponseResult<UserResponse>.Failure(
                 ErrorCode.NotFound,
                 $"User with ID '{id}' not found."
             );
-        }
 
         return ResponseResult<UserResponse>.Success(userResponse);
     }
@@ -54,22 +53,18 @@ public class UserService(DataContext context, IFlashcardAlgorithmService flashca
             .FirstOrDefaultAsync(x => x.Id == userId);
 
         if (user == null)
-        {
             return ResponseResult<int?>.Failure(
                 ErrorCode.NotFound,
                 $"User with ID '{userId}' not found."
             );
-        }
 
         int? providerId = user.AiProviders.FirstOrDefault()?.Id;
-        
+
         if (providerId == null)
-        {
             return ResponseResult<int?>.Failure(
                 ErrorCode.NotFound,
                 $"User with ID '{userId}' does not have any AI providers configured."
             );
-        }        
         return ResponseResult<int?>.Success(providerId);
     }
 
@@ -78,12 +73,10 @@ public class UserService(DataContext context, IFlashcardAlgorithmService flashca
         User? user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
         if (user is null)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.NotFound,
                 $"User with ID '{id}' not found."
             );
-        }
 
         user.AiProviders = request.AiProviders.Select(provider => (UserAiProvider)provider).ToList();
         user.DeckOption = request.DeckOption;
@@ -124,12 +117,10 @@ public class UserService(DataContext context, IFlashcardAlgorithmService flashca
             .FirstOrDefaultAsync();
 
         if (result == null)
-        {
             return ResponseResult<UserDashboardResponse>.Failure(
                 ErrorCode.NotFound,
                 $"User with ID '{userId}' not found."
             );
-        }
 
         // Mapping to DTOs
         IEnumerable<UserDeckSummaryResponse> deckResponses = result.Decks.Select(d => new UserDeckSummaryResponse(
@@ -153,8 +144,7 @@ public class UserService(DataContext context, IFlashcardAlgorithmService flashca
             ? flashcardAlgorithmService.EstimateRetention(validEaseFactors.Average())
             : 0.0;
 
-        UserDashboardResponse dashboardResponse =
-            new UserDashboardResponse(result.UserStreaks.Count, retentionRate, deckResponses);
+        UserDashboardResponse dashboardResponse = new(result.UserStreaks.Count, retentionRate, deckResponses);
 
         return ResponseResult<UserDashboardResponse>.Success(dashboardResponse);
     }

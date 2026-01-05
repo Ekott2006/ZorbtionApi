@@ -10,7 +10,7 @@ namespace Api.Controllers;
 [Authorize]
 [Route("api/[controller]/{id:int}")]
 [ApiController]
-public class CardController(ICardService cardService, ICurrentUserService currentUserService): BaseController
+public class CardController(ICardService cardService, ICurrentUserService currentUserService) : BaseController
 {
     [HttpPut("")]
     public async Task<IActionResult> Update(int id, UpdateCardStateRequest request)

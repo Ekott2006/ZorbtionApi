@@ -24,6 +24,7 @@ public class TimestampInterceptor : SaveChangesInterceptor
                     entry.Entity.UpdatedAt = now;
                     break;
             }
+
         return base.SavingChangesAsync(eventData, result, ct);
     }
 }

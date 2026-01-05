@@ -17,9 +17,9 @@ public class DatabaseFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        string connectionString = _config.GetConnectionString("DefaultConnection") 
+        string connectionString = _config.GetConnectionString("DefaultConnection")
                                   ?? throw new InvalidOperationException("Connection string not found");
-        
+
         DbContextOptions = new DbContextOptionsBuilder<DataContext>()
             .UseNpgsql(connectionString)
             .EnableSensitiveDataLogging()
@@ -37,9 +37,12 @@ public class DatabaseFixture : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    public DataContext CreateContext() => new DataContext(DbContextOptions);
+    public DataContext CreateContext()
+    {
+        return new DataContext(DbContextOptions);
+    }
 
-    protected virtual Task SeedAsync(DataContext context) 
+    protected virtual Task SeedAsync(DataContext context)
     {
         return Task.CompletedTask;
     }

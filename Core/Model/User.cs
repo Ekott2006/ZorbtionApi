@@ -5,8 +5,7 @@ namespace Core.Model;
 
 public class User : IdentityUser
 {
-    [Required]
-    public string ProfileImageUrl { get; set; } = "https://avatar.iran.liara.run/public";
+    [Required] public string ProfileImageUrl { get; set; } = "https://avatar.iran.liara.run/public";
     public List<UserRefreshToken> RefreshTokens { get; set; } = [];
     public List<DateOnly> UserStreaks { get; set; } = [];
     public DeckOption DeckOption { get; set; } = DeckOption.CreateDefault;

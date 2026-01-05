@@ -7,7 +7,8 @@ namespace Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserBotCodeController(IUserBotCodeService userBotCodeService, ICurrentUserService currentUserService): BaseController
+public class UserBotCodeController(IUserBotCodeService userBotCodeService, ICurrentUserService currentUserService)
+    : BaseController
 {
     [HttpPost]
     public async Task<IActionResult> Create()
@@ -16,11 +17,8 @@ public class UserBotCodeController(IUserBotCodeService userBotCodeService, ICurr
         if (string.IsNullOrEmpty(userId)) return Forbid();
 
         ResponseResult<string> result = await userBotCodeService.GenerateCode(userId);
-        
-        if (result.IsSuccess)
-        {
-            return Ok(new UserBotAuthCodeResponse(result.Value));
-        }
+
+        if (result.IsSuccess) return Ok(new UserBotAuthCodeResponse(result.Value));
 
         return ProcessResult(result);
     }

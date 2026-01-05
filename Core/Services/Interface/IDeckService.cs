@@ -4,7 +4,6 @@ using Core.Model;
 
 namespace Core.Services.Interface;
 
-
 public interface IDeckService
 {
     Task<ResponseResult<Deck>> Create(string creatorId, CreateDeckRequest request);

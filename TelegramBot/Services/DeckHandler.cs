@@ -23,6 +23,7 @@ public class DeckHandler(
                 ct);
             return;
         }
+
         string userId = userResult.Value;
 
         ResponseResult<UserDashboardResponse> result = await userService.GetUserDashboard(userId);
@@ -31,6 +32,7 @@ public class DeckHandler(
             await MessageHelper.SendError(bot, chatId, "Failed to load dashboard data.", ct);
             return;
         }
+
         UserDashboardResponse? dashboard = result.Value;
 
         string reply = $"🔥 *Streak:* {dashboard.Streak} days\n" +
@@ -55,6 +57,7 @@ public class DeckHandler(
             await MessageHelper.SendError(bot, chatId, "You are not authenticated.", ct);
             return;
         }
+
         string userId = userResult.Value;
 
         ResponseResult<UserDashboardResponse> result = await userService.GetUserDashboard(userId);
@@ -63,6 +66,7 @@ public class DeckHandler(
             await MessageHelper.SendInfo(bot, chatId, "No decks found.", ct);
             return;
         }
+
         UserDashboardResponse? dashboard = result.Value;
 
         IEnumerable<(int Id, string Name)> decks = dashboard.Decks.Select(d => (d.Id, d.Name));
@@ -83,6 +87,7 @@ public class DeckHandler(
             await MessageHelper.SendError(bot, query.Message!.Chat.Id, "Deck not found.", ct);
             return;
         }
+
         DeckSummaryResponse? summary = result.Value;
 
         string text = $"📚 *{summary.Name}*\n{summary.Description}\n\n" +

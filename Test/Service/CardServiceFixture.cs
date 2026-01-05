@@ -43,20 +43,20 @@ public class CardServiceFixture : DatabaseFixture
 
         // 4. Notes & Cards
         // We need explicit control over Cards for specific tests, but we can seed some defaults
-        Note? note = new NoteFaker(deck.Id, noteType.Id, TestCreatorId, shouldGenerateCard: false)
+        Note? note = new NoteFaker(deck.Id, noteType.Id, TestCreatorId, false)
             .Generate();
         context.Notes.Add(note);
         await context.SaveChangesAsync();
 
         // Add specific cards for general retrieval
-        List<Card> cards = new List<Card>
+        List<Card> cards = new()
         {
             new CardFaker(note.Id, TestTemplateId, CardState.New).Generate(),
             new CardFaker(note.Id, TestTemplateId, CardState.Review).Generate(),
             new CardFaker(note.Id, TestTemplateId, CardState.Learning).Generate()
         };
-        
-        foreach(Card c in cards) deck.Cards.Add(c); // Ensure link
+
+        foreach (Card c in cards) deck.Cards.Add(c); // Ensure link
         context.Cards.AddRange(cards);
         await context.SaveChangesAsync();
     }

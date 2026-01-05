@@ -9,7 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Core.Services;
 
-public class DeckService(DataContext context, IFlashcardAlgorithmService flashcardAlgorithmService, ITimeService timeService) : IDeckService
+public class DeckService(
+    DataContext context,
+    IFlashcardAlgorithmService flashcardAlgorithmService,
+    ITimeService timeService) : IDeckService
 {
     public async Task<ResponseResult<Deck>> Create(string creatorId, CreateDeckRequest request)
     {
@@ -18,12 +21,10 @@ public class DeckService(DataContext context, IFlashcardAlgorithmService flashca
             .AnyAsync(d => d.CreatorId == creatorId && d.Name == request.Name);
 
         if (deckExists)
-        {
             return ResponseResult<Deck>.Failure(
                 ErrorCode.AlreadyExists,
                 $"A deck with the name '{request.Name}' already exists."
             );
-        }
 
         Deck deck = new()
         {
@@ -44,24 +45,20 @@ public class DeckService(DataContext context, IFlashcardAlgorithmService flashca
         Deck? deck = await context.Decks.FirstOrDefaultAsync(d => d.Id == id && d.CreatorId == creatorId);
 
         if (deck is null)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.NotFound,
                 $"Deck with ID {id} not found or you don't have permission to update it."
             );
-        }
 
         // Check if another deck with the same name exists (excluding current deck)
         bool nameExists = await context.Decks
             .AnyAsync(d => d.CreatorId == creatorId && d.Name == request.Name && d.Id != id);
 
         if (nameExists)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.AlreadyExists,
                 $"Another deck with the name '{request.Name}' already exists."
             );
-        }
 
         deck.Name = request.Name;
         deck.Description = request.Description;
@@ -79,12 +76,10 @@ public class DeckService(DataContext context, IFlashcardAlgorithmService flashca
             .ExecuteDeleteAsync();
 
         if (affectedRows == 0)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.NotFound,
                 $"Deck with ID {id} not found or you don't have permission to delete it."
             );
-        }
 
         return ResponseResult<bool>.Success(true);
     }
@@ -107,12 +102,10 @@ public class DeckService(DataContext context, IFlashcardAlgorithmService flashca
             }).FirstOrDefaultAsync();
 
         if (deck is null)
-        {
             return ResponseResult<DeckStatisticsResponse>.Failure(
                 ErrorCode.NotFound,
                 $"Deck with ID {id} not found or you don't have permission to access its statistics."
             );
-        }
 
         DeckStatisticsResponse statistics = new(
             deck.Id,
@@ -146,12 +139,10 @@ public class DeckService(DataContext context, IFlashcardAlgorithmService flashca
             .FirstOrDefaultAsync();
 
         if (deck == null)
-        {
             return ResponseResult<DeckSummaryResponse>.Failure(
                 ErrorCode.NotFound,
                 $"Deck with ID {id} not found or you don't have permission to access its summary."
             );
-        }
 
         DeckSummaryResponse summary = new(
             deck.Id,

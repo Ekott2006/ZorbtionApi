@@ -13,7 +13,7 @@ namespace Core.Services;
 public class CardService(
     DataContext context,
     ITemplateService templateService,
-    IFlashcardAlgorithmService algorithmService, 
+    IFlashcardAlgorithmService algorithmService,
     ITimeService timeService,
     IAiServiceFactory aiServiceFactory)
     : BaseService, ICardService
@@ -34,15 +34,13 @@ public class CardService(
             .Include(x => x.Note)
             .Include(x => x.Template)
             .FirstOrDefaultAsync(x => x.Note.CreatorId == creatorId && x.Id == id);
-            
+
         if (card == null)
-        {
             return ResponseResult<Card>.Failure(
                 ErrorCode.NotFound,
                 $"Card with ID {id} not found or you don't have permission to access it."
             );
-        }
-        
+
         return ResponseResult<Card>.Success(card);
     }
 
@@ -50,13 +48,13 @@ public class CardService(
     {
         (int Interval, int Repetitions, double EaseFactor, DateTime DueDate, int StepIndex) result =
             Card.FlashcardData();
-            
+
         int affectedRows = request switch
         {
             UpdateCardStateRequest.Suspend => await context.Cards
                 .Where(x => x.Id == id && x.Note.CreatorId == creatorId)
                 .ExecuteUpdateAsync(x => x.SetProperty(u => u.State, CardState.Suspended)),
-                
+
             UpdateCardStateRequest.Unsuspend or UpdateCardStateRequest.Reset => await context.Cards
                 .Where(x => x.Id == id && x.Note.CreatorId == creatorId)
                 .ExecuteUpdateAsync(x => x
@@ -67,18 +65,16 @@ public class CardService(
                     .SetProperty(u => u.DueDate, timeService.UtcNow)
                     .SetProperty(u => u.StepIndex, result.StepIndex)
                 ),
-                
+
             _ => 0
         };
 
         if (affectedRows == 0)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.NotFound,
                 $"Card with ID {id} not found or you don't have permission to update it."
             );
-        }
-        
+
         return ResponseResult<bool>.Success(true);
     }
 
@@ -103,12 +99,10 @@ public class CardService(
             .FirstOrDefaultAsync();
 
         if (deck == null)
-        {
             return ResponseResult<CardResponse>.Failure(
                 ErrorCode.NotFound,
                 $"Deck with ID {deckId} not found."
             );
-        }
 
         IQueryable<Card> baseQuery = context.Cards
             .Include(c => c.Template)
@@ -124,7 +118,7 @@ public class CardService(
                     deck.Option.SortOrder)
                 .FirstOrDefaultAsync();
 
-        if (learningCard != null) 
+        if (learningCard != null)
         {
             CardResponse response = await MapToResponse(learningCard);
             return ResponseResult<CardResponse>.Success(response);
@@ -168,12 +162,10 @@ public class CardService(
         }
 
         if (newLeft <= 0)
-        {
             return ResponseResult<CardResponse>.Failure(
                 ErrorCode.InvalidState,
                 "Daily new card limit reached for this deck."
             );
-        }
 
         Card? newCard =
             await ApplySortOrder(baseQuery.Where(c => c.State == CardState.New), deck.Option.SortOrder)
@@ -187,10 +179,10 @@ public class CardService(
             CardResponse response = await MapToResponse(newCard);
             return ResponseResult<CardResponse>.Success(response);
         }
-
     }
 
-    public async Task<ResponseResult<CardResponse>> SubmitCardReview(string creatorId, int id, CardSubmitRequest request)
+    public async Task<ResponseResult<CardResponse>> SubmitCardReview(string creatorId, int id,
+        CardSubmitRequest request)
     {
         DateTime now = timeService.UtcNow;
         DateOnly today = DateOnly.FromDateTime(now);
@@ -202,34 +194,28 @@ public class CardService(
             .FirstOrDefaultAsync(x => x.Id == id && x.Note.CreatorId == creatorId && x.State != CardState.Suspended);
 
         if (card is null)
-        {
             return ResponseResult<CardResponse>.Failure(
                 ErrorCode.NotFound,
                 $"Card with ID {id} not found or you don't have permission to review it."
             );
-        }
 
         // 2. Fetch User with Tracking
         User? user = await context.Users
             .FirstOrDefaultAsync(x => x.Id == creatorId);
-            
+
         if (user == null)
-        {
             return ResponseResult<CardResponse>.Failure(
                 ErrorCode.NotFound,
                 "User not found."
             );
-        }
 
         // 3. Find AI Provider
         UserAiProvider? provider = user.AiProviders.FirstOrDefault(x => x.Id == request.UserProviderId);
         if (provider is null)
-        {
             return ResponseResult<CardResponse>.Failure(
                 ErrorCode.NotFound,
                 $"AI provider with ID {request.UserProviderId} not found or you don't have permission to use it."
             );
-        }
 
         // 4. AI Evaluation
         IAiService aiService = aiServiceFactory.GetUserService(provider);
@@ -240,12 +226,10 @@ public class CardService(
 
         int? flashcardQuality = await aiService.CheckAnswer(front, request.Answer, back);
         if (flashcardQuality is null)
-        {
             return ResponseResult<CardResponse>.Failure(
                 ErrorCode.InvalidState,
                 "Unable to evaluate answer with AI provider."
             );
-        }
 
         // 5. SRS Algorithm Calculation
         FlashcardResult result = algorithmService.Calculate((int)flashcardQuality, card.State, card.Interval,
@@ -278,7 +262,7 @@ public class CardService(
         if (!user.UserStreaks.Contains(today)) user.UserStreaks.Add(today);
 
         await context.SaveChangesAsync();
-        
+
         CardResponse response = await MapToResponse(card);
         return ResponseResult<CardResponse>.Success(response);
     }

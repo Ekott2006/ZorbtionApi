@@ -7,10 +7,7 @@ public abstract class BaseController : ControllerBase
 {
     protected IActionResult ProcessResult<T>(ResponseResult<T> result)
     {
-        if (result.IsSuccess)
-        {
-            return result.Value is bool or null ? NoContent() : Ok(result.Value);
-        }
+        if (result.IsSuccess) return result.Value is bool or null ? NoContent() : Ok(result.Value);
 
         return result.Error?.Code switch
         {
@@ -18,7 +15,7 @@ public abstract class BaseController : ControllerBase
             ErrorCode.Forbidden => Forbid(), // Or StatusCode(403, result.Error)
             ErrorCode.NotFound => NotFound(result.Error),
             ErrorCode.Conflict or ErrorCode.AlreadyExists => Conflict(result.Error),
-            ErrorCode.InvalidState  => UnprocessableEntity(result.Error),
+            ErrorCode.InvalidState => UnprocessableEntity(result.Error),
             _ => StatusCode(500, result.Error)
         };
     }

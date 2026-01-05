@@ -11,7 +11,7 @@ namespace Api.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class NoteController(INoteService noteService, ICurrentUserService currentUserService): BaseController
+public class NoteController(INoteService noteService, ICurrentUserService currentUserService) : BaseController
 {
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id)
@@ -42,7 +42,8 @@ public class NoteController(INoteService noteService, ICurrentUserService curren
         string? userId = currentUserService.GetUserId();
         if (string.IsNullOrEmpty(userId)) return Forbid();
 
-        ResponseResult<bool> result = await noteService.Create(userId, queryRequest.DeckId, queryRequest.NoteTypeId, request);
+        ResponseResult<bool> result =
+            await noteService.Create(userId, queryRequest.DeckId, queryRequest.NoteTypeId, request);
         return ProcessResult(result);
     }
 

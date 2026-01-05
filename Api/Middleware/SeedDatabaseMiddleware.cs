@@ -31,35 +31,34 @@ public static class SeedDatabaseMiddleware
         foreach (User user in users)
         {
             IdentityResult result = await userManager.CreateAsync(user, password);
-            if (!result.Succeeded) 
-                throw new Exception($"User creation failed: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            if (!result.Succeeded)
+                throw new Exception(
+                    $"User creation failed: {string.Join(", ", result.Errors.Select(e => e.Description))}");
 
             List<NoteType>? noteTypes = new NoteTypeFaker(user.Id).GenerateBetween(2, 4);
             List<Deck>? decks = new DeckFaker(user.Id).GenerateBetween(1, 2);
 
             foreach (Deck deck in decks)
+            foreach (NoteType noteType in noteTypes)
             {
-                foreach (NoteType noteType in noteTypes)
+                List<Note>? notes = new NoteFaker(deck.Id, 0, user.Id).GenerateBetween(2, 5);
+
+                foreach (Note note in notes)
                 {
-                    List<Note>? notes = new NoteFaker(deck.Id, 0, user.Id).GenerateBetween(2, 5);
+                    note.NoteType = noteType;
 
-                    foreach (Note note in notes)
+                    foreach (NoteTypeTemplate template in noteType.Templates)
                     {
-                        note.NoteType = noteType;
-
-                        foreach (NoteTypeTemplate template in noteType.Templates)
+                        List<Card>? cards = new CardFaker(0, 0).GenerateBetween(1, 2);
+                        foreach (Card card in cards)
                         {
-                            List<Card>? cards = new CardFaker(0, 0).GenerateBetween(1, 2);
-                            foreach (Card card in cards)
-                            {
-                                card.Template = template;
-                                note.Cards.Add(card);
-                            }
+                            card.Template = template;
+                            note.Cards.Add(card);
                         }
                     }
-
-                    deck.Notes.AddRange(notes);
                 }
+
+                deck.Notes.AddRange(notes);
             }
 
             context.NoteTypes.AddRange(noteTypes);

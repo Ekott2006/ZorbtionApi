@@ -24,37 +24,31 @@ public class NoteTypeService(DataContext context, IHtmlService htmlService, ICss
         NoteType? noteType = await context.NoteTypes.AsNoTracking()
             .Include(x => x.Templates)
             .FirstOrDefaultAsync(x => x.Id == id && (x.CreatorId == creatorId || x.CreatorId == null));
-            
+
         if (noteType == null)
-        {
             return ResponseResult<NoteType>.Failure(
                 ErrorCode.NotFound,
                 $"Note type with ID {id} not found or you don't have permission to access it."
             );
-        }
-        
+
         return ResponseResult<NoteType>.Success(noteType);
     }
-    
+
     public async Task<ResponseResult<NoteType>> Create(string creatorId, CreateNoteTypeRequest request)
     {
         NoteTypeRequest cleanupRequest = await Cleanup(request);
-        
+
         if (await DoesNoteNameExist(cleanupRequest.Name, creatorId))
-        {
             return ResponseResult<NoteType>.Failure(
                 ErrorCode.AlreadyExists,
                 $"A note type with the name '{cleanupRequest.Name}' already exists."
             );
-        }
 
         if (cleanupRequest.Templates.Count == 0)
-        {
             return ResponseResult<NoteType>.Failure(
                 ErrorCode.InvalidState,
                 "Note type must have at least one template."
             );
-        }
 
         NoteType noteType = new()
         {
@@ -63,10 +57,10 @@ public class NoteTypeService(DataContext context, IHtmlService htmlService, ICss
             Templates = cleanupRequest.Templates.Select(x => (NoteTypeTemplate)x).ToList(),
             CssStyle = cleanupRequest.CssStyle
         };
-        
+
         await context.NoteTypes.AddAsync(noteType);
         await context.SaveChangesAsync();
-        
+
         return ResponseResult<NoteType>.Success(noteType);
     }
 
@@ -80,15 +74,13 @@ public class NoteTypeService(DataContext context, IHtmlService htmlService, ICss
         int affectedRows = await context.NoteTypes
             .Where(x => x.CreatorId == creatorId && x.Id == id)
             .ExecuteDeleteAsync();
-            
+
         if (affectedRows == 0)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.NotFound,
                 $"Note type with ID {id} not found or you don't have permission to delete it."
             );
-        }
-        
+
         return ResponseResult<bool>.Success(true);
     }
 

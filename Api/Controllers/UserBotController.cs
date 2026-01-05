@@ -7,7 +7,7 @@ namespace Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserBotController(IUserBotService userBotService,  ICurrentUserService currentUserService): BaseController
+public class UserBotController(IUserBotService userBotService, ICurrentUserService currentUserService) : BaseController
 {
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)

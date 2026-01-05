@@ -37,7 +37,7 @@ public class UserServiceTests(UserServiceFixture fixture) : IntegrationTestBase<
     public async Task Get_SeededUser_ReturnsUser()
     {
         ResponseResult<UserResponse> result = await _userService.Get("test-user-class-seed");
-        
+
         Assert.True(result.IsSuccess);
         Assert.Equal("SeedUser", result.Value.UserName);
     }
@@ -52,16 +52,16 @@ public class UserServiceTests(UserServiceFixture fixture) : IntegrationTestBase<
 
         Assert.NotNull(await Context.Users.FindAsync("temp-user"));
     }
-    
+
     [Fact]
     public async Task Check_TransactionRollback_Works_Part2()
     {
         // "temp-user" should NOT exist here if rollback works (assuming this runs after or independently)
         // With xUnit, order is undefined but isolation should hold regardless. 
         // If this runs BEFORE valid creation it passes. If it runs AFTER valid creation it passes (because of rollback).
-        
+
         Assert.Null(await Context.Users.FindAsync("temp-user"));
-        
+
         // Seeded user SHOULD exist
         Assert.NotNull(await Context.Users.FindAsync("test-user-class-seed"));
     }

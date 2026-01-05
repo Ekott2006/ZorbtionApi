@@ -11,7 +11,8 @@ namespace Api.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class NoteTypeController(INoteTypeService noteTypeService, ICurrentUserService currentUserService): BaseController
+public class NoteTypeController(INoteTypeService noteTypeService, ICurrentUserService currentUserService)
+    : BaseController
 {
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] PaginationRequest<int> request)

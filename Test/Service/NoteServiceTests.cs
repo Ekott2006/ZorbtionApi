@@ -25,13 +25,13 @@ public class NoteServiceTests(NoteServiceFixture fixture) : IntegrationTestBase<
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();
-        
+
         _mockTemplate = new Mock<ITemplateService>();
         _mockTemplate.Setup(x => x.GetAllFields(It.IsAny<IEnumerable<string>>()))
             .Returns(new List<string> { "Front", "Back" });
 
         _mockLogger = new Mock<ILogger<NoteService>>();
-        
+
         _mockAiFactory = new Mock<IAiServiceFactory>();
         _mockAiService = new Mock<IAiService>();
         _mockAiFactory.Setup(x => x.GetUserService(It.IsAny<UserAiProvider>())).Returns(_mockAiService.Object);
@@ -51,11 +51,12 @@ public class NoteServiceTests(NoteServiceFixture fixture) : IntegrationTestBase<
         List<CreateNoteRequest> requests = [request];
 
         // Act
-        ResponseResult<bool> result = await _noteService.Create(Fixture.TestCreatorId, Fixture.TestDeckId, Fixture.TestNoteTypeId, requests);
+        ResponseResult<bool> result = await _noteService.Create(Fixture.TestCreatorId, Fixture.TestDeckId,
+            Fixture.TestNoteTypeId, requests);
 
         // Assert
         Assert.True(result.IsSuccess, result.Error?.Message);
-        
+
         Context.ChangeTracker.Clear();
         Note? note = await Context.Notes.Include(n => n.Cards).FirstOrDefaultAsync(n => n.DeckId == Fixture.TestDeckId);
         Assert.NotNull(note);
@@ -67,7 +68,11 @@ public class NoteServiceTests(NoteServiceFixture fixture) : IntegrationTestBase<
     public async Task Get_ValidPagination_ReturnsNotes()
     {
         // Seed a note first
-        Note note = new Note { CreatorId = Fixture.TestCreatorId, DeckId = Fixture.TestDeckId, NoteTypeId = Fixture.TestNoteTypeId, Data = new(), Tags = [] };
+        Note note = new()
+        {
+            CreatorId = Fixture.TestCreatorId, DeckId = Fixture.TestDeckId, NoteTypeId = Fixture.TestNoteTypeId,
+            Data = new Dictionary<string, string>(), Tags = []
+        };
         Context.Notes.Add(note);
         await Context.SaveChangesAsync();
 
@@ -84,19 +89,20 @@ public class NoteServiceTests(NoteServiceFixture fixture) : IntegrationTestBase<
     {
         // Arrange
         User? user = await Context.Users.FindAsync(Fixture.TestCreatorId);
-        UserAiProvider provider = new UserAiProvider { Key = "key", Type = UserAiProviderType.ChatGpt };
+        UserAiProvider provider = new() { Key = "key", Type = UserAiProviderType.ChatGpt };
         user.AiProviders.Add(provider);
         await Context.SaveChangesAsync();
 
         _mockAiService.Setup(x => x.GenerateFlashcard(It.IsAny<List<string>>(), "Desc"))
-            .ReturnsAsync(new List<Dictionary<string, string>> 
-            { 
-                new() { { "Front", "GenQ" }, { "Back", "GenA" } } 
+            .ReturnsAsync(new List<Dictionary<string, string>>
+            {
+                new() { { "Front", "GenQ" }, { "Back", "GenA" } }
             });
 
         // Act
         // Use generated provider ID
-        ResponseResult<List<Dictionary<string, string>>> result = await _noteService.GenerateFlashcards(Fixture.TestCreatorId, provider.Id, Fixture.TestNoteTypeId, "Desc");
+        ResponseResult<List<Dictionary<string, string>>> result =
+            await _noteService.GenerateFlashcards(Fixture.TestCreatorId, provider.Id, Fixture.TestNoteTypeId, "Desc");
 
         // Assert
         Assert.True(result.IsSuccess);

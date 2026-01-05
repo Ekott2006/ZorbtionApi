@@ -27,10 +27,7 @@ public abstract class IntegrationTestBase<TFixture>(TFixture fixture) : IClassFi
             await _transaction.RollbackAsync();
             await _transaction.DisposeAsync();
         }
-        
-        if (Context != null)
-        {
-            await Context.DisposeAsync();
-        }
+
+        if (Context != null) await Context.DisposeAsync();
     }
 }

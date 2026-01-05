@@ -12,17 +12,18 @@ namespace Core.Services;
 public class UserBotCodeService(DataContext context, ITimeService timeService) : IUserBotCodeService
 {
     public async Task<ResponseResult<string>> GenerateCode(string userId)
-    {   string code = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+    {
+        string code = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
         UserBotCode userBotCode = new()
         {
             RandomCode = code,
             UserId = userId,
             ExpirationDate = timeService.UtcNow.AddMinutes(5)
         };
-        
+
         await context.UserBotCodes.AddAsync(userBotCode);
         await context.SaveChangesAsync();
-        
+
         return ResponseResult<string>.Success(code);
     }
 
@@ -33,22 +34,17 @@ public class UserBotCodeService(DataContext context, ITimeService timeService) :
         UserBotCode? botCode = await context.UserBotCodes
             .Where(x => x.RandomCode == code && now <= x.ExpirationDate)
             .FirstOrDefaultAsync();
-            
+
         if (botCode is null)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.NotFound,
                 "Invalid or expired verification code."
             );
-        }
 
         bool doesProviderExist = await context.UserBots
             .AnyAsync(x => x.BotId == botId && x.UserId == botCode.UserId);
-            
-        if (doesProviderExist)
-        {
-            return ResponseResult<bool>.Success(true);
-        }
+
+        if (doesProviderExist) return ResponseResult<bool>.Success(true);
 
         UserBot userBot = new()
         {
@@ -56,10 +52,10 @@ public class UserBotCodeService(DataContext context, ITimeService timeService) :
             UserId = botCode.UserId,
             Type = botType
         };
-        
+
         context.UserBots.Add(userBot);
         await context.SaveChangesAsync();
-        
+
         return ResponseResult<bool>.Success(true);
     }
 }

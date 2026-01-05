@@ -12,7 +12,11 @@ namespace Api.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class DeckController(IDeckService deckService, INoteService noteService, ICardService cardService,  ICurrentUserService currentUserService)
+public class DeckController(
+    IDeckService deckService,
+    INoteService noteService,
+    ICardService cardService,
+    ICurrentUserService currentUserService)
     : BaseController
 {
     [HttpGet("{id:int}")]
@@ -79,7 +83,7 @@ public class DeckController(IDeckService deckService, INoteService noteService, 
         // But ProcessResult typically returns Ok(value).
         // If we strictly want CreatedAtAction, we'd need to inspect the result or use ProcessResult and accept 200 OK.
         // For standardization as per user request, using ProcessResult is safer/easier.
-        return ProcessResult(result); 
+        return ProcessResult(result);
     }
 
     [HttpPut("{id:int}")]

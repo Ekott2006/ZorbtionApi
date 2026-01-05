@@ -12,7 +12,8 @@ using Xunit;
 
 namespace Test.Service;
 
-public class UserBotCodeServiceTests(UserBotServiceFixture fixture) : IntegrationTestBase<UserBotServiceFixture>(fixture)
+public class UserBotCodeServiceTests(UserBotServiceFixture fixture)
+    : IntegrationTestBase<UserBotServiceFixture>(fixture)
 {
     private UserBotCodeService _codeService;
     private Mock<ITimeService> _mockTime;
@@ -20,7 +21,7 @@ public class UserBotCodeServiceTests(UserBotServiceFixture fixture) : Integratio
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();
-        
+
         _mockTime = new Mock<ITimeService>();
         _mockTime.Setup(x => x.UtcNow).Returns(new DateTime(2025, 1, 1, 12, 0, 0, DateTimeKind.Utc));
 
@@ -35,7 +36,7 @@ public class UserBotCodeServiceTests(UserBotServiceFixture fixture) : Integratio
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         Assert.Equal(6, result.Value.Length);
-        
+
         // Verify expiration
         UserBotCode? stored = await Context.UserBotCodes.FirstOrDefaultAsync(x => x.RandomCode == result.Value);
         Assert.NotNull(stored);
@@ -47,18 +48,18 @@ public class UserBotCodeServiceTests(UserBotServiceFixture fixture) : Integratio
     {
         // Setup code
         string code = "123456";
-        Context.UserBotCodes.Add(new UserBotCode 
-        { 
-            UserId = Fixture.TestCreatorId, 
-            RandomCode = code, 
-            ExpirationDate = _mockTime.Object.UtcNow.AddMinutes(5) 
+        Context.UserBotCodes.Add(new UserBotCode
+        {
+            UserId = Fixture.TestCreatorId,
+            RandomCode = code,
+            ExpirationDate = _mockTime.Object.UtcNow.AddMinutes(5)
         });
         await Context.SaveChangesAsync();
 
         ResponseResult<bool> result = await _codeService.VerifyCode(code, "bot-verified", UserBotType.Telegram);
 
         Assert.True(result.IsSuccess);
-        
+
         Context.ChangeTracker.Clear();
         UserBot? bot = await Context.UserBots.FirstOrDefaultAsync(x => x.BotId == "bot-verified");
         Assert.NotNull(bot);
@@ -71,11 +72,11 @@ public class UserBotCodeServiceTests(UserBotServiceFixture fixture) : Integratio
     {
         // Setup expired code
         string code = "654321";
-        Context.UserBotCodes.Add(new UserBotCode 
-        { 
-            UserId = Fixture.TestCreatorId, 
-            RandomCode = code, 
-            ExpirationDate = _mockTime.Object.UtcNow.AddMinutes(-1) 
+        Context.UserBotCodes.Add(new UserBotCode
+        {
+            UserId = Fixture.TestCreatorId,
+            RandomCode = code,
+            ExpirationDate = _mockTime.Object.UtcNow.AddMinutes(-1)
         });
         await Context.SaveChangesAsync();
 

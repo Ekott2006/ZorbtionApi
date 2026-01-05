@@ -15,12 +15,10 @@ public class UserBotService(DataContext context) : IUserBotService
             .FirstOrDefaultAsync();
 
         if (string.IsNullOrEmpty(userId))
-        {
             return ResponseResult<string>.Failure(
                 ErrorCode.NotFound,
                 $"No user found associated with bot ID '{botId}'."
             );
-        }
 
         return ResponseResult<string>.Success(userId);
     }
@@ -32,12 +30,10 @@ public class UserBotService(DataContext context) : IUserBotService
             .ExecuteDeleteAsync();
 
         if (affectedRows == 0)
-        {
             return ResponseResult<bool>.Failure(
                 ErrorCode.NotFound,
                 $"Bot with ID {id} not found or you don't have permission to delete it."
             );
-        }
 
         return ResponseResult<bool>.Success(true);
     }

@@ -23,7 +23,7 @@ public class UserBotServiceTests(UserBotServiceFixture fixture) : IntegrationTes
     public async Task Get_ValidBotId_ReturnsUserId()
     {
         // Seed
-        UserBot bot = new UserBot { BotId = "telegram-123", UserId = Fixture.TestCreatorId, Type = UserBotType.Telegram };
+        UserBot bot = new() { BotId = "telegram-123", UserId = Fixture.TestCreatorId, Type = UserBotType.Telegram };
         Context.UserBots.Add(bot);
         await Context.SaveChangesAsync();
 
@@ -36,14 +36,14 @@ public class UserBotServiceTests(UserBotServiceFixture fixture) : IntegrationTes
     [Fact]
     public async Task Delete_ValidId_DeletesUserBot()
     {
-        UserBot bot = new UserBot { BotId = "telegram-delete", UserId = Fixture.TestCreatorId, Type = UserBotType.Telegram };
+        UserBot bot = new() { BotId = "telegram-delete", UserId = Fixture.TestCreatorId, Type = UserBotType.Telegram };
         Context.UserBots.Add(bot);
         await Context.SaveChangesAsync();
 
         ResponseResult<bool> result = await _userBotService.Delete(Fixture.TestCreatorId, bot.Id);
 
         Assert.True(result.IsSuccess);
-        
+
         Context.ChangeTracker.Clear();
         Assert.Null(await Context.UserBots.FindAsync(bot.Id));
     }
