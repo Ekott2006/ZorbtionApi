@@ -13,12 +13,16 @@ namespace Core.Services;
 public class CardService(
     DataContext context,
     ITemplateService templateService,
-    IFlashcardAlgorithmService algorithmService, ITimeService timeService)
+    IFlashcardAlgorithmService algorithmService, 
+    ITimeService timeService,
+    IAiServiceFactory aiServiceFactory)
     : BaseService, ICardService
 {
     public async Task<PaginationResult<Card>> Get(string creatorId, int deckId, PaginationRequest<int> request)
     {
         IQueryable<Card> query = context.Cards.AsNoTracking()
+            .Include(x => x.Note)
+            .Include(x => x.Template)
             .Where(x => x.Note.DeckId == deckId && x.Note.CreatorId == creatorId);
 
         return await PaginateAsync(query, request);
@@ -26,7 +30,9 @@ public class CardService(
 
     public async Task<ResponseResult<Card>> Get(string creatorId, int id)
     {
-        Card? card = await context.Cards
+        Card? card = await context.Cards.AsNoTracking()
+            .Include(x => x.Note)
+            .Include(x => x.Template)
             .FirstOrDefaultAsync(x => x.Note.CreatorId == creatorId && x.Id == id);
             
         if (card == null)
@@ -226,7 +232,7 @@ public class CardService(
         }
 
         // 4. AI Evaluation
-        IAiService aiService = AiServiceFactory.GetUserService(provider);
+        IAiService aiService = aiServiceFactory.GetUserService(provider);
         (string front, string back) = (
             await templateService.Parse(card.Template.Front, card.Note.Data),
             await templateService.Parse(card.Template.Back, card.Note.Data)

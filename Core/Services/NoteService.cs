@@ -12,7 +12,11 @@ using Z.EntityFramework.Extensions;
 
 namespace Core.Services;
 
-public class NoteService(DataContext context, ITemplateService templateService, ILogger<NoteService> logger) : BaseService, INoteService
+public class NoteService(
+    DataContext context, 
+    ITemplateService templateService, 
+    ILogger<NoteService> logger,
+    IAiServiceFactory aiServiceFactory) : BaseService, INoteService
 {
     public async Task<PaginationResult<Note>> Get(string creatorId, int deckId, PaginationRequest<int> request)
     {
@@ -94,7 +98,7 @@ public class NoteService(DataContext context, ITemplateService templateService, 
             );
         }
 
-        IAiService? aiService = AiServiceFactory.GetUserService(provider);
+        IAiService? aiService = aiServiceFactory.GetUserService(provider);
 
         List<string> fields = templateService.GetAllFields(TemplateService.GetField(templates));
         
