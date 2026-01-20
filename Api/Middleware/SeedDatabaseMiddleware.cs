@@ -25,46 +25,56 @@ public static class SeedDatabaseMiddleware
     private static async Task SeedDatabase(DataContext context, UserManager<User> userManager)
     {
         const string password = "sv+4Fn6+VK2GU5W!";
-
-        List<User>? users = new UserFaker().GenerateBetween(2, 5);
+        List<User> users = new UserFaker().GenerateBetween(2, 5);
 
         foreach (User user in users)
         {
-            IdentityResult result = await userManager.CreateAsync(user, password);
-            if (!result.Succeeded)
-                throw new Exception(
-                    $"User creation failed: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            // 1. Create User (Standard Identity)
+            var result = await userManager.CreateAsync(user, password);
+            if (!result.Succeeded) continue;
 
-            List<NoteType>? noteTypes = new NoteTypeFaker(user.Id).GenerateBetween(2, 4);
-            List<Deck>? decks = new DeckFaker(user.Id).GenerateBetween(1, 2);
+            // 2. Generate and Bulk Insert Parents (Decks and NoteTypes)
+            var userDecks = new DeckFaker(user.Id).GenerateBetween(1, 2);
+            var userNoteTypes = new NoteTypeFaker(user.Id).GenerateBetween(2, 4);
 
-            foreach (Deck deck in decks)
-            foreach (NoteType noteType in noteTypes)
+            // We MUST insert these now so the DB generates IDs for them
+            // IncludeGraph ensures NoteTypeTemplates inside NoteTypes are also saved
+            await context.BulkInsertAsync(userDecks);
+            await context.BulkInsertAsync(userNoteTypes, b => b.IncludeGraph = true);
+
+            // 3. Prepare Child Entities
+            var allNotesForUser = new List<Note>();
+
+            foreach (var deck in userDecks)
             {
-                List<Note>? notes = new NoteFaker(deck.Id, 0, user.Id).GenerateBetween(2, 5);
-
-                foreach (Note note in notes)
+                foreach (var noteType in userNoteTypes)
                 {
-                    note.NoteType = noteType;
+                    var notes = new NoteFaker(deck.Id, 0, user.Id).GenerateBetween(2, 5);
 
-                    foreach (NoteTypeTemplate template in noteType.Templates)
+                    foreach (var note in notes)
                     {
-                        List<Card>? cards = new CardFaker(0, 0).GenerateBetween(1, 2);
-                        foreach (Card card in cards)
+                        // Crucial: Set the FK IDs explicitly
+                        note.DeckId = deck.Id;
+                        note.NoteTypeId = noteType.Id;
+
+                        // If you have cards, link them to the templates
+                        foreach (var template in noteType.Templates)
                         {
-                            card.Template = template;
-                            note.Cards.Add(card);
+                            var cards = new CardFaker(0, 0).GenerateBetween(1, 2);
+                            foreach (var card in cards)
+                            {
+                                card.NoteTypeTemplateId = template.Id;
+                                note.Cards.Add(card); // Cards will be saved via IncludeGraph
+                            }
                         }
                     }
+                    allNotesForUser.AddRange(notes);
                 }
-
-                deck.Notes.AddRange(notes);
             }
 
-            context.NoteTypes.AddRange(noteTypes);
-            context.Decks.AddRange(decks);
+            // 4. Finally, Bulk Insert the Notes (and their Cards)
+            // Since Decks and NoteTypes are already in the DB, this will now succeed
+            await context.BulkInsertAsync(allNotesForUser, b => b.IncludeGraph = true);
         }
-
-        await context.SaveChangesAsync();
     }
 }
